@@ -44,6 +44,7 @@ def patched_count_populated(self):
 Identifier.matches = patched_matches
 Identifier.count_populated = patched_count_populated
 import sys
+import time
 from datetime import datetime, timedelta
 from database.database import kingdb
 from pyrogram.types import InlineKeyboardButton
@@ -172,13 +173,24 @@ class Bot(Client):
 
         # Check if the link exists and has at least 5 minutes remaining validity
         # This prevents serving a link that is about to expire immediately
-        if link and expire_date and datetime.now().timestamp() < (expire_date - 300):
-            self.LOGGER(__name__).info(f"Serving cached link for {chat_id} (Expires in {int(expire_date - datetime.now().timestamp())}s)")
+        if link and expire_date and time.time() < (expire_date - 300):
+            self.LOGGER(__name__).info(f"Serving cached link for {chat_id} (Expires in {int(expire_date - time.time())}s)")
             return link
 
         self.LOGGER(__name__).info(f"Generating new link for {chat_id}")
-        new_expire_date = datetime.now() + timedelta(minutes=10)
-        link = (await self.create_chat_invite_link(chat_id=chat_id, creates_join_request=True, expire_date=new_expire_date)).invite_link
 
-        await kingdb.store_reqLink(chat_id, link, new_expire_date.timestamp())
+        # Use explicit Unix timestamp for expiration (10 minutes from now)
+        expire_ts = int(time.time()) + 600
+        # Create link with expiration date and explicit name for visibility
+        expire_dt = datetime.fromtimestamp(expire_ts)
+        link_name = f"Expiring Link {expire_ts}"
+
+        link = (await self.create_chat_invite_link(
+            chat_id=chat_id,
+            creates_join_request=True,
+            expire_date=expire_dt,
+            name=link_name
+        )).invite_link
+
+        await kingdb.store_reqLink(chat_id, link, expire_ts)
         return link
