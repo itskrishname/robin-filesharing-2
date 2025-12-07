@@ -5,6 +5,7 @@ from plugins import web_server
 
 import asyncio
 import pyromod.listen
+from pyromod.types import ListenerTypes
 from pyrogram import Client
 from pyrogram.enums import ParseMode
 import sys
@@ -26,6 +27,13 @@ class Bot(Client):
             bot_token=TG_BOT_TOKEN
         )
         self.LOGGER = LOGGER
+
+        # Fix for pyromod KeyError: <ListenerTypes.MESSAGE: 'message'>
+        # Ensure listeners dictionary has correct keys if they are missing
+        if hasattr(self, 'listeners'):
+            for listener_type in ListenerTypes:
+                if listener_type not in self.listeners:
+                    self.listeners[listener_type] = []
 
     async def start(self):
         await super().start()
