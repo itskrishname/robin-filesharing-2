@@ -170,9 +170,13 @@ class Bot(Client):
     async def get_valid_invite_link(self, chat_id: int):
         link, expire_date = await kingdb.get_stored_reqLink(chat_id)
 
-        if link and expire_date and datetime.now().timestamp() < expire_date:
+        # Check if the link exists and has at least 5 minutes remaining validity
+        # This prevents serving a link that is about to expire immediately
+        if link and expire_date and datetime.now().timestamp() < (expire_date - 300):
+            self.LOGGER(__name__).info(f"Serving cached link for {chat_id} (Expires in {int(expire_date - datetime.now().timestamp())}s)")
             return link
 
+        self.LOGGER(__name__).info(f"Generating new link for {chat_id}")
         new_expire_date = datetime.now() + timedelta(minutes=10)
         link = (await self.create_chat_invite_link(chat_id=chat_id, creates_join_request=True, expire_date=new_expire_date)).invite_link
 
