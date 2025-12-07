@@ -9,6 +9,40 @@ from pyrogram.types.pyromod.identifier import Identifier
 from typing import Union, List, Optional
 from pyrogram import Client
 from pyrogram.enums import ParseMode
+
+# Monkeypatch Identifier to fix pyromod 1.5 crash on Python 3.14+
+# RecursionError and AttributeError: 'Identifier' object has no attribute '__annotations__'
+def patched_matches(self, update: "Identifier") -> bool:
+    # Explicitly list fields instead of relying on __annotations__
+    fields = ['inline_message_id', 'chat_id', 'message_id', 'from_user_id']
+    for field in fields:
+        pattern_value = getattr(self, field, None)
+        update_value = getattr(update, field, None)
+
+        if pattern_value is not None:
+            if isinstance(update_value, list):
+                if isinstance(pattern_value, list):
+                    if not set(update_value).intersection(set(pattern_value)):
+                        return False
+                elif pattern_value not in update_value:
+                    return False
+            elif isinstance(pattern_value, list):
+                if update_value not in pattern_value:
+                    return False
+            elif update_value != pattern_value:
+                return False
+    return True
+
+def patched_count_populated(self):
+    non_null_count = 0
+    fields = ['inline_message_id', 'chat_id', 'message_id', 'from_user_id']
+    for attr in fields:
+        if getattr(self, attr, None) is not None:
+            non_null_count += 1
+    return non_null_count
+
+Identifier.matches = patched_matches
+Identifier.count_populated = patched_count_populated
 import sys
 from datetime import datetime, timedelta
 from database.database import kingdb
@@ -28,15 +62,6 @@ class Bot(Client):
             bot_token=TG_BOT_TOKEN
         )
         self.LOGGER = LOGGER
-
-        # Fix for pyromod 1.5 AttributeError: 'Identifier' object has no attribute '__annotations__'
-        if not hasattr(Identifier, "__annotations__"):
-            Identifier.__annotations__ = {
-                'inline_message_id': Optional[Union[str, List[str]]],
-                'chat_id': Optional[Union[Union[int, str], List[Union[int, str]]]],
-                'message_id': Optional[Union[int, List[int]]],
-                'from_user_id': Optional[Union[Union[int, str], List[Union[int, str]]]]
-            }
 
     async def start(self):
         await super().start()
