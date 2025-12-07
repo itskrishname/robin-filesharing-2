@@ -16,10 +16,10 @@ APP_ID = int(os.environ.get("APP_ID",  "20617619"))
 API_HASH = os.environ.get("API_HASH", "551d72c724b334b7255e83478fc14399")
 
 #Your db channel Id --⚠️ REQUIRED--
-CHANNEL_ID = int(os.environ.get("CHANNEL_ID", "-1002694720727"))
+CHANNEL_ID = int(os.environ.get("CHANNEL_ID", "-1003373676715"))
 
 #OWNER ID --⚠️ REQUIRED--
-OWNER_ID = int(os.environ.get("OWNER_ID", "6093336723"))
+OWNER_ID = int(os.environ.get("OWNER_ID", "7660990923"))
 
 #SUPPORT_GROUP: This is used for normal users for getting help if they don't understand how to use the bot --⚠ OPTIONAL--
 SUPPORT_GROUP = os.environ.get("SUPPORT_GROUP", "")
@@ -28,9 +28,9 @@ SUPPORT_GROUP = os.environ.get("SUPPORT_GROUP", "")
 PORT = os.environ.get("PORT", "8080")
 
 #Database --⚠️ REQUIRED--
-DB_URI = os.environ.get("DATABASE_URL", "mongodb+srv://hunter1026:N2rhIhbglW379qpi@cluster0.hg49k.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0")
+DB_URI = os.environ.get("DATABASE_URL", "mongodb+srv://Krishna:krishna@cluster0.ecime.mongodb.net/")
 
-DB_NAME = os.environ.get("DATABASE_NAME", "heavy")
+DB_NAME = os.environ.get("DATABASE_NAME", "heavy11")
 
 TG_BOT_WORKERS = int(os.environ.get("TG_BOT_WORKERS", "4"))
 
