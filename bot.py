@@ -5,7 +5,8 @@ from plugins import web_server
 
 import asyncio
 import pyromod.listen
-from pyromod.types import ListenerTypes
+from pyrogram.types.pyromod.identifier import Identifier
+from typing import Union, List, Optional
 from pyrogram import Client
 from pyrogram.enums import ParseMode
 import sys
@@ -28,12 +29,14 @@ class Bot(Client):
         )
         self.LOGGER = LOGGER
 
-        # Fix for pyromod KeyError: <ListenerTypes.MESSAGE: 'message'>
-        # Ensure listeners dictionary has correct keys if they are missing
-        if hasattr(self, 'listeners'):
-            for listener_type in ListenerTypes:
-                if listener_type not in self.listeners:
-                    self.listeners[listener_type] = []
+        # Fix for pyromod 1.5 AttributeError: 'Identifier' object has no attribute '__annotations__'
+        if not hasattr(Identifier, "__annotations__"):
+            Identifier.__annotations__ = {
+                'inline_message_id': Optional[Union[str, List[str]]],
+                'chat_id': Optional[Union[Union[int, str], List[Union[int, str]]]],
+                'message_id': Optional[Union[int, List[int]]],
+                'from_user_id': Optional[Union[Union[int, str], List[Union[int, str]]]]
+            }
 
     async def start(self):
         await super().start()
