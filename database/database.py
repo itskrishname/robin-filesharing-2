@@ -290,15 +290,15 @@ class SidDataBase:
         # Retrieve the stored link for a specific channel_id from store_reqLink_data
         data = await self.store_reqLink_data.find_one({'_id': channel_id})
         if data:
-            return data.get('link')
-        return None
+            return data.get('link'), data.get('expire_date')
+        return None, None
 
     # Set (or update) the stored link for a specific channel
-    async def store_reqLink(self, channel_id: int, link: str):
+    async def store_reqLink(self, channel_id: int, link: str, expire_date: int):
         # Insert or update the link for the channel_id in store_reqLink_data
         await self.store_reqLink_data.update_one(
             {'_id': channel_id}, 
-            {'$set': {'link': link}}, 
+            {'$set': {'link': link, 'expire_date': expire_date}},
             upsert=True
         )
 

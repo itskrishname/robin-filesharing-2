@@ -8,7 +8,7 @@ import pyromod.listen
 from pyrogram import Client
 from pyrogram.enums import ParseMode
 import sys
-from datetime import datetime
+from datetime import datetime, timedelta
 from database.database import kingdb
 from pyrogram.types import InlineKeyboardButton
 from config import API_HASH, APP_ID, LOGGER, TG_BOT_TOKEN, TG_BOT_WORKERS, CHANNEL_ID, PORT, OWNER_ID
@@ -97,13 +97,7 @@ class Bot(Client):
 
                 if not data.username:
                     await kingdb.add_reqChannel(chat_id)
-                    req_channel_link = await kingdb.get_stored_reqLink(chat_id)
-
-                    if not req_channel_link:
-                        req_channel_link = (await self.create_chat_invite_link(chat_id=chat_id, creates_join_request=True)).invite_link
-                        await kingdb.store_reqLink(chat_id, req_channel_link)
-
-                    req_chnl_buttons[chat_id] = [InlineKeyboardButton(text=channel_name, url=req_channel_link)]
+                    req_chnl_buttons[chat_id] = channel_name
 
                 else:
                     chnl_buttons.append(temp_butn)
@@ -136,3 +130,15 @@ class Bot(Client):
     async def stop(self, *args):
         await super().stop()
         self.LOGGER(__name__).info(f"{self.name} Bot stopped.")
+
+    async def get_valid_invite_link(self, chat_id: int):
+        link, expire_date = await kingdb.get_stored_reqLink(chat_id)
+
+        if link and expire_date and datetime.now().timestamp() < expire_date:
+            return link
+
+        new_expire_date = datetime.now() + timedelta(minutes=10)
+        link = (await self.create_chat_invite_link(chat_id=chat_id, creates_join_request=True, expire_date=new_expire_date)).invite_link
+
+        await kingdb.store_reqLink(chat_id, link, new_expire_date.timestamp())
+        return link

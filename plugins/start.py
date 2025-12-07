@@ -141,7 +141,10 @@ async def not_joined(client: Client, message: Message):
 
             buttons = client.REQ_FSUB_BUTTONS['normal'][:]
 
-            buttons.extend([chat_button for chat_id, chat_button in client.REQ_FSUB_BUTTONS['request'].items() if not await kingdb.reqSent_user_exist(chat_id, user_id)])
+            for chat_id, channel_name in client.REQ_FSUB_BUTTONS['request'].items():
+                if not await kingdb.reqSent_user_exist(chat_id, user_id):
+                    link = await client.get_valid_invite_link(chat_id)
+                    buttons.append([InlineKeyboardButton(text=channel_name, url=link)])
                                              
         try:
             buttons.append([InlineKeyboardButton(text='♻️ Tʀʏ Aɢᴀɪɴ', url=f"https://t.me/{client.username}?start={message.command[1]}")])
