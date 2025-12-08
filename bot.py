@@ -170,23 +170,33 @@ class Bot(Client):
         await super().stop()
         self.LOGGER(__name__).info(f"{self.name} Bot stopped.")
 
-    async def get_valid_invite_link(self, chat_id: int):
+    async def get_valid_invite_link(self, chat_id: int, req_mode: bool = True):
         # Always generate a new link for each user request to ensure uniqueness and 1-user limit
-        self.LOGGER(__name__).info(f"Generating new 1-use link for {chat_id}")
+        self.LOGGER(__name__).info(f"Generating new 1-use link for {chat_id} (req_mode={req_mode})")
 
         expire_ts = int(time.time()) + 600
         expire_dt = datetime.fromtimestamp(expire_ts)
         link_name = f"One-Time Link {expire_ts}"
 
-        # Generate link with creates_join_request=True so "Request Force-Sub" flow works.
-        # Note: If creates_join_request=True, member_limit must be None.
-        # The 1-user limit is effectively enforced by generating a unique link per user/interaction.
-        link = (await self.create_chat_invite_link(
-            chat_id=chat_id,
-            creates_join_request=True,
-            expire_date=expire_dt,
-            name=link_name
-        )).invite_link
+        if req_mode:
+            # Generate link with creates_join_request=True so "Request Force-Sub" flow works.
+            # Note: If creates_join_request=True, member_limit must be None.
+            link = (await self.create_chat_invite_link(
+                chat_id=chat_id,
+                creates_join_request=True,
+                expire_date=expire_dt,
+                name=link_name
+            )).invite_link
+        else:
+            # Normal Force-Sub mode: generate a standard invite link.
+            # Use member_limit=1 to effectively make it a one-time use link for security/uniqueness.
+            link = (await self.create_chat_invite_link(
+                chat_id=chat_id,
+                member_limit=1,
+                creates_join_request=False,
+                expire_date=expire_dt,
+                name=link_name
+            )).invite_link
 
         # We do not store this link in the database as it is one-time use and cannot be reused
         return link

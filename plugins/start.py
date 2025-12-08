@@ -146,7 +146,7 @@ async def not_joined(client: Client, message: Message):
                 else:
                     # Private channel, generate fresh link
                     chat_id = btn_data['chat_id']
-                    link = await client.get_valid_invite_link(chat_id)
+                    link = await client.get_valid_invite_link(chat_id, req_mode=False)
                     buttons.append([InlineKeyboardButton(text=btn_data['name'], url=link)])
         else:
             user_id = message.from_user.id
@@ -155,7 +155,7 @@ async def not_joined(client: Client, message: Message):
 
             for chat_id, channel_name in client.REQ_FSUB_BUTTONS['request'].items():
                 if not await kingdb.reqSent_user_exist(chat_id, user_id):
-                    link = await client.get_valid_invite_link(chat_id)
+                    link = await client.get_valid_invite_link(chat_id, req_mode=True)
                     buttons.append([InlineKeyboardButton(text=channel_name, url=link)])
                                              
         try:
