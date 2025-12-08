@@ -135,11 +135,13 @@ class Bot(Client):
                 if not data.username:
                     await kingdb.add_reqChannel(chat_id)
                     req_chnl_buttons[chat_id] = channel_name
+                    # For private channels, store details in global_buttons for dynamic generation
+                    global_buttons.append({'chat_id': chat_id, 'name': channel_name, 'username': None})
 
                 else:
                     chnl_buttons.append(temp_butn)
-
-                global_buttons.append(temp_butn)
+                    # For public channels, store pre-made button in global_buttons
+                    global_buttons.append({'chat_id': chat_id, 'name': channel_name, 'username': data.username, 'url': channel_link})
 
                 channel_infos.append(f"<b><blockquote>NAME: <a href = {channel_link}>{channel_name}</a>\n(ID: <code>{chat_id}</code>)</blockquote></b>\n\n")
 

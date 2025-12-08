@@ -134,8 +134,20 @@ async def not_joined(client: Client, message: Message):
     
     try:
         if not client.REQFSUB:
-            buttons = client.FSUB_BUTTONS[:]
-
+            # Modified to generate dynamic links for private channels even in normal mode
+            buttons = []
+            for btn_data in client.FSUB_BUTTONS:
+                if 'username' in btn_data and btn_data['username']:
+                    # Public channel, use static button
+                    buttons.append([InlineKeyboardButton(text=btn_data['name'], url=f"https://t.me/{btn_data['username']}")])
+                elif 'url' in btn_data and btn_data['url']:
+                     # Already has a static url (should be public but just in case)
+                     buttons.append([InlineKeyboardButton(text=btn_data['name'], url=btn_data['url'])])
+                else:
+                    # Private channel, generate fresh link
+                    chat_id = btn_data['chat_id']
+                    link = await client.get_valid_invite_link(chat_id)
+                    buttons.append([InlineKeyboardButton(text=btn_data['name'], url=link)])
         else:
             user_id = message.from_user.id
 
