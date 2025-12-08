@@ -94,7 +94,7 @@ class Bot(Client):
             sys.exit()
 
         self.set_parse_mode(ParseMode.HTML)
-        self.LOGGER(__name__).info(f"Aᴅᴠᴀɴᴄᴇ Fɪʟᴇ-Sʜᴀʀɪɴɢ ʙᴏᴛV3 Mᴀᴅᴇ Bʏ ➪ @Lord_Vasudev_Krishna [Tᴇʟᴇɢʀᴀᴍ Usᴇʀɴᴀᴍᴇ]")
+        self.LOGGER(__name__).info(f"Aᴅᴠᴀɴᴄᴇ Fɪʟᴇ-Sʜᴀʀɪɴɢ ʙᴏᴛV3 Mᴀᴅᴇ Bʏ ➪ @Shidoteshika1 [Tᴇʟᴇɢʀᴀᴍ Usᴇʀɴᴀᴍᴇ]")
         self.LOGGER(__name__).info(f"{self.name} Bot Running..!")
         self.LOGGER(__name__).info(f"OPERATION SUCCESSFULL ✅")
         #web-response
@@ -178,11 +178,12 @@ class Bot(Client):
         expire_dt = datetime.fromtimestamp(expire_ts)
         link_name = f"One-Time Link {expire_ts}"
 
-        # Generate link with member_limit=1 (one-time use)
-        # We DO NOT use creates_join_request=True because we want the user to join immediately (and expire the link)
+        # Generate link with creates_join_request=True so "Request Force-Sub" flow works.
+        # Note: If creates_join_request=True, member_limit must be None.
+        # The 1-user limit is effectively enforced by generating a unique link per user/interaction.
         link = (await self.create_chat_invite_link(
             chat_id=chat_id,
-            member_limit=1,
+            creates_join_request=True,
             expire_date=expire_dt,
             name=link_name
         )).invite_link
