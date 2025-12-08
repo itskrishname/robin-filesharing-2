@@ -94,7 +94,7 @@ class Bot(Client):
             sys.exit()
 
         self.set_parse_mode(ParseMode.HTML)
-        self.LOGGER(__name__).info(f"Aᴅᴠᴀɴᴄᴇ Fɪʟᴇ-Sʜᴀʀɪɴɢ ʙᴏᴛV3 Mᴀᴅᴇ Bʏ ➪ @Shidoteshika1 [Tᴇʟᴇɢʀᴀᴍ Usᴇʀɴᴀᴍᴇ]")
+        self.LOGGER(__name__).info(f"Aᴅᴠᴀɴᴄᴇ Fɪʟᴇ-Sʜᴀʀɪɴɢ ʙᴏᴛV3 Mᴀᴅᴇ Bʏ ➪ @Lord_Vasudev_Krishna [Tᴇʟᴇɢʀᴀᴍ Usᴇʀɴᴀᴍᴇ]")
         self.LOGGER(__name__).info(f"{self.name} Bot Running..!")
         self.LOGGER(__name__).info(f"OPERATION SUCCESSFULL ✅")
         #web-response
