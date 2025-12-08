@@ -171,28 +171,21 @@ class Bot(Client):
         self.LOGGER(__name__).info(f"{self.name} Bot stopped.")
 
     async def get_valid_invite_link(self, chat_id: int):
-        link, expire_date = await kingdb.get_stored_reqLink(chat_id)
+        # Always generate a new link for each user request to ensure uniqueness and 1-user limit
+        self.LOGGER(__name__).info(f"Generating new 1-use link for {chat_id}")
 
-        # Check if the link exists and has at least 5 minutes remaining validity
-        # This prevents serving a link that is about to expire immediately
-        if link and expire_date and time.time() < (expire_date - 300):
-            self.LOGGER(__name__).info(f"Serving cached link for {chat_id} (Expires in {int(expire_date - time.time())}s)")
-            return link
-
-        self.LOGGER(__name__).info(f"Generating new link for {chat_id}")
-
-        # Use explicit Unix timestamp for expiration (10 minutes from now)
         expire_ts = int(time.time()) + 600
-        # Create link with expiration date and explicit name for visibility
         expire_dt = datetime.fromtimestamp(expire_ts)
-        link_name = f"Expiring Link {expire_ts}"
+        link_name = f"One-Time Link {expire_ts}"
 
+        # Generate link with member_limit=1 (one-time use)
+        # We DO NOT use creates_join_request=True because we want the user to join immediately (and expire the link)
         link = (await self.create_chat_invite_link(
             chat_id=chat_id,
-            creates_join_request=True,
+            member_limit=1,
             expire_date=expire_dt,
             name=link_name
         )).invite_link
 
-        await kingdb.store_reqLink(chat_id, link, expire_ts)
+        # We do not store this link in the database as it is one-time use and cannot be reused
         return link
