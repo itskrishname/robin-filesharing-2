@@ -127,10 +127,13 @@ class Bot(Client):
                 channel_link = data.invite_link 
                 channel_name = data.title
 
+                if len(channel_name) > 20:
+                    channel_name = channel_name[:17] + "..."
+
                 if not channel_link:
                     channel_link = await self.export_chat_invite_link(chat_id)
 
-                temp_butn = [InlineKeyboardButton(text=channel_name, url=channel_link)]
+                temp_butn = InlineKeyboardButton(text=channel_name, url=channel_link)
 
                 if not data.username:
                     await kingdb.add_reqChannel(chat_id)

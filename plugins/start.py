@@ -133,31 +133,43 @@ async def not_joined(client: Client, message: Message):
     temp = await message.reply(f"<i><b>Cʜᴇᴄᴋɪɴɢ...</b></i>")
     
     try:
+        flat_buttons = []
+
         if not client.REQFSUB:
             # Modified to generate dynamic links for private channels even in normal mode
-            buttons = []
             for btn_data in client.FSUB_BUTTONS:
+                channel_name = btn_data['name']
+                if len(channel_name) > 20:
+                    channel_name = channel_name[:17] + "..."
+
                 if 'username' in btn_data and btn_data['username']:
                     # Public channel, use static button
-                    buttons.append([InlineKeyboardButton(text=btn_data['name'], url=f"https://t.me/{btn_data['username']}")])
+                    flat_buttons.append(InlineKeyboardButton(text=channel_name, url=f"https://t.me/{btn_data['username']}"))
                 elif 'url' in btn_data and btn_data['url']:
                      # Already has a static url (should be public but just in case)
-                     buttons.append([InlineKeyboardButton(text=btn_data['name'], url=btn_data['url'])])
+                     flat_buttons.append(InlineKeyboardButton(text=channel_name, url=btn_data['url']))
                 else:
                     # Private channel, generate fresh link
                     chat_id = btn_data['chat_id']
                     link = await client.get_valid_invite_link(chat_id, req_mode=False)
-                    buttons.append([InlineKeyboardButton(text=btn_data['name'], url=link)])
+                    flat_buttons.append(InlineKeyboardButton(text=channel_name, url=link))
         else:
             user_id = message.from_user.id
 
-            buttons = client.REQ_FSUB_BUTTONS['normal'][:]
+            # Normal buttons are already flat InlineKeyboardButton objects thanks to bot.py change
+            flat_buttons.extend(client.REQ_FSUB_BUTTONS['normal'])
 
             for chat_id, channel_name in client.REQ_FSUB_BUTTONS['request'].items():
+                if len(channel_name) > 20:
+                    channel_name = channel_name[:17] + "..."
+
                 if not await kingdb.reqSent_user_exist(chat_id, user_id):
                     link = await client.get_valid_invite_link(chat_id, req_mode=True)
-                    buttons.append([InlineKeyboardButton(text=channel_name, url=link)])
-                                             
+                    flat_buttons.append(InlineKeyboardButton(text=channel_name, url=link))
+
+        # Grid layout: Chunk flat buttons into rows of 2
+        buttons = [flat_buttons[i:i + 2] for i in range(0, len(flat_buttons), 2)]
+
         try:
             buttons.append([InlineKeyboardButton(text='♻️ Tʀʏ Aɢᴀɪɴ', url=f"https://t.me/{client.username}?start={message.command[1]}")])
         except IndexError:
