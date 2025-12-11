@@ -133,39 +133,56 @@ async def not_joined(client: Client, message: Message):
     temp = await message.reply(f"<i><b>Cʜᴇᴄᴋɪɴɢ...</b></i>")
     
     try:
-        flat_buttons = []
+        items_to_process = []
+        user_id = message.from_user.id
 
-        if not client.REQFSUB:
-            # Modified to generate dynamic links for private channels even in normal mode
-            for btn_data in client.FSUB_BUTTONS:
-                channel_name = btn_data['name']
-                if len(channel_name) > 20:
-                    channel_name = channel_name[:17] + "..."
+        # Define async helper for REQFSUB private channel check
+        async def get_link_if_needed(cid, uid):
+            if not await kingdb.reqSent_user_exist(cid, uid):
+                return await client.get_valid_invite_link(cid, req_mode=True)
+            return None
 
-                if 'username' in btn_data and btn_data['username']:
-                    # Public channel, use static button
-                    flat_buttons.append(InlineKeyboardButton(text=channel_name, url=f"https://t.me/{btn_data['username']}"))
-                elif 'url' in btn_data and btn_data['url']:
-                     # Already has a static url (should be public but just in case)
-                     flat_buttons.append(InlineKeyboardButton(text=channel_name, url=btn_data['url']))
+        # Prepare tasks for all channels
+        for btn_data in client.FSUB_BUTTONS:
+            is_public = bool(btn_data.get('username')) or bool(btn_data.get('url'))
+            chat_id = btn_data['chat_id']
+
+            if not client.REQFSUB:
+                if is_public:
+                    url = f"https://t.me/{btn_data['username']}" if btn_data.get('username') else btn_data['url']
+                    items_to_process.append({'type': 'static', 'url': url})
                 else:
-                    # Private channel, generate fresh link
-                    chat_id = btn_data['chat_id']
-                    link = await client.get_valid_invite_link(chat_id, req_mode=False)
-                    flat_buttons.append(InlineKeyboardButton(text=channel_name, url=link))
-        else:
-            user_id = message.from_user.id
+                    # Private, Normal Mode
+                    items_to_process.append({'type': 'async', 'coro': client.get_valid_invite_link(chat_id, req_mode=False)})
+            else:
+                if is_public:
+                    url = f"https://t.me/{btn_data['username']}" if btn_data.get('username') else btn_data['url']
+                    items_to_process.append({'type': 'static', 'url': url})
+                else:
+                    # Private, Request Mode
+                    items_to_process.append({'type': 'async', 'coro': get_link_if_needed(chat_id, user_id)})
 
-            # Normal buttons are already flat InlineKeyboardButton objects thanks to bot.py change
-            flat_buttons.extend(client.REQ_FSUB_BUTTONS['normal'])
+        # Gather async tasks in parallel for speed
+        async_tasks = [item['coro'] for item in items_to_process if item['type'] == 'async']
+        results = []
+        if async_tasks:
+            results = await asyncio.gather(*async_tasks)
 
-            for chat_id, channel_name in client.REQ_FSUB_BUTTONS['request'].items():
-                if len(channel_name) > 20:
-                    channel_name = channel_name[:17] + "..."
+        # Reconstruct buttons
+        flat_buttons = []
+        async_res_idx = 0
 
-                if not await kingdb.reqSent_user_exist(chat_id, user_id):
-                    link = await client.get_valid_invite_link(chat_id, req_mode=True)
-                    flat_buttons.append(InlineKeyboardButton(text=channel_name, url=link))
+        for item in items_to_process:
+            url = None
+            if item['type'] == 'static':
+                url = item['url']
+            else:
+                url = results[async_res_idx]
+                async_res_idx += 1
+
+            if url:
+                idx = len(flat_buttons) + 1
+                flat_buttons.append(InlineKeyboardButton(text=f"Join Channel {idx}", url=url))
 
         # Grid layout: Chunk flat buttons into rows of 2
         buttons = [flat_buttons[i:i + 2] for i in range(0, len(flat_buttons), 2)]
