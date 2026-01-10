@@ -47,7 +47,7 @@ import sys
 import time
 from datetime import datetime, timedelta
 from database.database import kingdb
-from pyrogram.types import InlineKeyboardButton
+from pyrogram.types import InlineKeyboardButton, BotCommand
 from config import API_HASH, APP_ID, LOGGER, TG_BOT_TOKEN, TG_BOT_WORKERS, CHANNEL_ID, PORT, OWNER_ID
 
 class Bot(Client):
@@ -63,6 +63,10 @@ class Bot(Client):
             bot_token=TG_BOT_TOKEN
         )
         self.LOGGER = LOGGER
+        self.FOLDER_LIST = []
+
+    async def update_folders(self):
+        self.FOLDER_LIST = await kingdb.get_all_folders()
 
     async def start(self):
         await super().start()
@@ -75,6 +79,21 @@ class Bot(Client):
         self.CHANNEL_LIST, self.FSUB_BUTTONS = [], []
         self.REQ_FSUB_BUTTONS = {'normal': [], 'request': {}}
         await self.update_chat_ids()
+        await self.update_folders()
+
+        await self.set_bot_commands([
+            BotCommand("start", "Start Bot"),
+            BotCommand("help", "Get Help"),
+            BotCommand("addfolder", "Add Folder Link"),
+            BotCommand("myfolders", "Manage Folders"),
+            BotCommand("users", "User Settings"),
+            BotCommand("forcesub", "Force Sub Settings"),
+            BotCommand("broadcast", "Broadcast Message"),
+            BotCommand("cancel", "Cancel Broadcast"),
+            BotCommand("status", "Bot Status"),
+            BotCommand("cmd", "Admin Commands"),
+            BotCommand("restart", "Restart Bot"),
+        ])
                 
         try:
             db_channel = await self.get_chat(CHANNEL_ID)

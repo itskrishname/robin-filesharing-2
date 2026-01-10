@@ -25,8 +25,23 @@ class SidDataBase:
         self.rqst_fsub_data = self.database['request_forcesub']
         self.rqst_fsub_Channel_data = self.database['request_forcesub_channel']
         self.store_reqLink_data = self.database['store_reqLink']
+        self.folders_data = self.database['folders']
     
     
+    # FOLDER MANAGEMENT
+    async def add_folder(self, link: str):
+        existing = await self.folders_data.find_one({'link': link})
+        if not existing:
+            await self.folders_data.insert_one({'link': link})
+
+    async def get_all_folders(self):
+        folder_docs = await self.folders_data.find().to_list(length=None)
+        return [doc['link'] for doc in folder_docs]
+
+    async def del_folder(self, link: str):
+        await self.folders_data.delete_one({'link': link})
+
+
     # CHANNEL BUTTON SETTINGS
     async def set_channel_button_link(self, button_name: str, button_link: str):
         await self.channel_button_link_data.delete_many({})  # Remove all existing documents
