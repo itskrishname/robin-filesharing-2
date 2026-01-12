@@ -4,9 +4,14 @@ from helper_func import is_admin
 from database.database import kingdb
 from bot import Bot
 from config import OWNER_ID
+import logging
 
-@Bot.on_message(filters.command("addfolder") & filters.private & is_admin)
+logger = logging.getLogger(__name__)
+
+# Allow Owner explicitly in case is_admin check fails for some reason
+@Bot.on_message(filters.command("addfolder") & filters.private & (is_admin | filters.user(OWNER_ID)))
 async def add_folder(client: Bot, message: Message):
+    logger.info(f"Command /addfolder triggered by {message.from_user.id}")
     if len(message.command) < 2:
         return await message.reply("<b>⚠️ Usage:</b> `/addfolder https://t.me/addlist/...`")
 
@@ -20,8 +25,9 @@ async def add_folder(client: Bot, message: Message):
 
     await message.reply(f"<b>✅ Folder Added Successfully!</b>\n\nLink: {link}")
 
-@Bot.on_message(filters.command("myfolders") & filters.private & is_admin)
+@Bot.on_message(filters.command("myfolders") & filters.private & (is_admin | filters.user(OWNER_ID)))
 async def my_folders(client: Bot, message: Message):
+    logger.info(f"Command /myfolders triggered by {message.from_user.id}")
     folders = client.FOLDER_LIST
 
     if not folders:
