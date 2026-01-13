@@ -49,7 +49,7 @@ async def my_folders(client: Bot, message: Message):
 
     await message.reply(text, reply_markup=InlineKeyboardMarkup(buttons), disable_web_page_preview=True)
 
-@Bot.on_callback_query(filters.regex(r"^delfolder_"))
+@Bot.on_callback_query(filters.regex(r"^delfolder_"), group=-1)
 async def delete_folder_callback(client: Bot, query: CallbackQuery):
     user_id = query.from_user.id
 
