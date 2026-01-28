@@ -64,9 +64,13 @@ class Bot(Client):
         )
         self.LOGGER = LOGGER
         self.FOLDER_LIST = []
+        self.EXTRALINK_LIST = []
 
     async def update_folders(self):
         self.FOLDER_LIST = await kingdb.get_all_folders()
+
+    async def update_extralinks(self):
+        self.EXTRALINK_LIST = await kingdb.get_all_extralinks()
 
     async def start(self):
         await super().start()
@@ -80,12 +84,15 @@ class Bot(Client):
         self.REQ_FSUB_BUTTONS = {'normal': [], 'request': {}}
         await self.update_chat_ids()
         await self.update_folders()
+        await self.update_extralinks()
 
         await self.set_bot_commands([
             BotCommand("start", "Start Bot"),
             BotCommand("help", "Get Help"),
             BotCommand("addfolder", "Add Folder Link"),
             BotCommand("myfolders", "Manage Folders"),
+            BotCommand("extralink", "Add Extra Link"),
+            BotCommand("myextralink", "Manage Extra Links"),
             BotCommand("users", "User Settings"),
             BotCommand("forcesub", "Force Sub Settings"),
             BotCommand("broadcast", "Broadcast Message"),

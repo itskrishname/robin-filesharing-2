@@ -26,6 +26,7 @@ class SidDataBase:
         self.rqst_fsub_Channel_data = self.database['request_forcesub_channel']
         self.store_reqLink_data = self.database['store_reqLink']
         self.folders_data = self.database['folders']
+        self.extralinks_data = self.database['extralinks']
     
     
     # FOLDER MANAGEMENT
@@ -40,6 +41,20 @@ class SidDataBase:
 
     async def del_folder(self, link: str):
         await self.folders_data.delete_one({'link': link})
+
+
+    # EXTRALINK MANAGEMENT
+    async def add_extralink(self, link: str):
+        existing = await self.extralinks_data.find_one({'link': link})
+        if not existing:
+            await self.extralinks_data.insert_one({'link': link})
+
+    async def get_all_extralinks(self):
+        link_docs = await self.extralinks_data.find().to_list(length=None)
+        return [doc['link'] for doc in link_docs]
+
+    async def del_extralink(self, link: str):
+        await self.extralinks_data.delete_one({'link': link})
 
 
     # CHANNEL BUTTON SETTINGS

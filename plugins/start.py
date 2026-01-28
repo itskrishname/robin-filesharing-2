@@ -190,6 +190,12 @@ async def not_joined(client: Client, message: Message):
                 idx = len(flat_buttons) + 1
                 flat_buttons.append(InlineKeyboardButton(text=f"Join Channel {idx}", url=folder_link))
 
+        # Add Extra Links (No verification needed, just append to list)
+        if client.EXTRALINK_LIST:
+            for link in client.EXTRALINK_LIST:
+                idx = len(flat_buttons) + 1
+                flat_buttons.append(InlineKeyboardButton(text=f"Join Channel {idx}", url=link))
+
         # Grid layout: Chunk flat buttons into rows of 2
         buttons = [flat_buttons[i:i + 2] for i in range(0, len(flat_buttons), 2)]
 
