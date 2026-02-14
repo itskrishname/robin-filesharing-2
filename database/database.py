@@ -27,6 +27,7 @@ class SidDataBase:
         self.store_reqLink_data = self.database['store_reqLink']
         self.folders_data = self.database['folders']
         self.extralinks_data = self.database['extralinks']
+        self.auto_restart_data = self.database['auto_restart']
     
     
     # FOLDER MANAGEMENT
@@ -153,6 +154,19 @@ class SidDataBase:
             return data.get('value', False)
         return False
     
+    async def set_auto_restart(self, value: bool):
+        existing = await self.auto_restart_data.find_one({})
+        if existing:
+            await self.auto_restart_data.update_one({}, {'$set': {'value': value}})
+        else:
+            await self.auto_restart_data.insert_one({'value': value})
+
+    async def get_auto_restart(self):
+        data = await self.auto_restart_data.find_one({})
+        if data:
+            return data.get('value', False)
+        return False
+
 
     # USER MANAGEMNT
     async def present_user(self, user_id : int):

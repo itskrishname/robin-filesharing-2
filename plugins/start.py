@@ -235,11 +235,25 @@ async def restart_bot(client: Client, message: Message):
     try:
         await asyncio.sleep(6)  # Wait for 6 seconds before restarting
         await msg.delete()
-        args = [sys.executable, "main.py"]  # Adjust this if your start file is named differently
-        os.execl(sys.executable, *args)
+        await client.restart_process()
     except Exception as e:
         print(f"Error occured while Restarting the bot: {e}")
         return await msg.edit_text(f"<b><i>! Eʀʀᴏʀ, Cᴏɴᴛᴀᴄᴛ ᴅᴇᴠᴇʟᴏᴘᴇʀ ᴛᴏ sᴏʟᴠᴇ ᴛʜᴇ ɪssᴜᴇs @imakashrabha</i></b>\n<blockquote expandable><b>Rᴇᴀsᴏɴ:</b> {e}</blockquote>")
-    # Optionally, you can add cleanup tasks here
-    #subprocess.Popen([sys.executable, "main.py"])  # Adjust this if your start file is named differently
-    #sys.exit()
+
+@Bot.on_message(filters.command('autorestart') & filters.private & filters.user(OWNER_ID))
+async def auto_restart_bot(client: Client, message: Message):
+    if len(message.command) != 2:
+        return await message.reply("Use `/autorestart on` or `/autorestart off`")
+
+    state = message.command[1].lower()
+
+    if state == "on":
+        await kingdb.set_auto_restart(True)
+        await client.start_auto_restart_task()
+        await message.reply("<b><blockquote>🤖 Aᴜᴛᴏ Rᴇsᴛᴀʀᴛ Eɴᴀʙʟᴇᴅ ✅\n\n<i>Bᴏᴛ ᴡɪʟʟ ʀᴇsᴛᴀʀᴛ ᴇᴠᴇʀʏ 2 ʜᴏᴜʀs.</i></blockquote></b>")
+    elif state == "off":
+        await kingdb.set_auto_restart(False)
+        await client.stop_auto_restart_task()
+        await message.reply("<b><blockquote>🤖 Aᴜᴛᴏ Rᴇsᴛᴀʀᴛ Dɪsᴀʙʟᴇᴅ ❌</blockquote></b>")
+    else:
+        await message.reply("Use `/autorestart on` or `/autorestart off`")
