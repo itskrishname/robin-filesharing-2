@@ -46,6 +46,7 @@ Identifier.count_populated = patched_count_populated
 import sys
 import os
 import time
+import asyncio
 from datetime import datetime, timedelta
 from database.database import kingdb
 from pyrogram.types import InlineKeyboardButton, BotCommand
@@ -91,12 +92,26 @@ class Bot(Client):
         await self.set_bot_commands([
             BotCommand("start", "Start Bot"),
             BotCommand("help", "Get Help"),
+            BotCommand("files", "File Management"),
+            BotCommand("genlink", "Generate Link"),
+            BotCommand("batch", "Batch File Sharing"),
             BotCommand("addfolder", "Add Folder Link"),
             BotCommand("myfolders", "Manage Folders"),
             BotCommand("extralink", "Add Extra Link"),
             BotCommand("myextralink", "Manage Extra Links"),
             BotCommand("users", "User Settings"),
             BotCommand("forcesub", "Force Sub Settings"),
+            BotCommand("add_fsub", "Add Force Sub Channel"),
+            BotCommand("del_fsub", "Delete Force Sub Channel"),
+            BotCommand("fsub_chnl", "List Force Sub Channels"),
+            BotCommand("req_fsub", "Request Force Sub Mode"),
+            BotCommand("add_admins", "Add Admin"),
+            BotCommand("del_admins", "Remove Admin"),
+            BotCommand("admin_list", "List Admins"),
+            BotCommand("add_banuser", "Ban User"),
+            BotCommand("del_banuser", "Unban User"),
+            BotCommand("banuser_list", "List Banned Users"),
+            BotCommand("auto_del", "Auto Delete Settings"),
             BotCommand("broadcast", "Broadcast Message"),
             BotCommand("cancel", "Cancel Broadcast"),
             BotCommand("status", "Bot Status"),
